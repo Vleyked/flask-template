@@ -11,5 +11,22 @@ def home():
     return "Hello SDA students!"
 
 
+@app.route("/explore")
+def explore():
+    return "Hello explore!"
+
+
+@app.route("/notifications")
+def notifications():
+    return "Hello notifications!"
+
+
+@app.route("/messages")
+def messages():
+    return "Hello messages!"
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        debug=True,
+    )
