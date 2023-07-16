@@ -1,1 +1,13 @@
-<p>Under construction</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Home Page</title>
+</head>
+<body>
+    <h1>Users:</h1>
+    {% for user in users %}
+        <p>{{ user.id }}</p>
+        <p>{{ user.name }}</p>
+    {% endfor %}
+</body>
+</html>
