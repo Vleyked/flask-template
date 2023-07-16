@@ -25,6 +25,21 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
 
 class RegistrationForm(FlaskForm):
     """Fields from wtforms
@@ -59,7 +74,7 @@ class LoginForm(FlaskForm):
 
     username = StringField("Username", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
-    sumbit = SubmitField("Login")
+    submit = SubmitField("Login")
 
 
 # Exercise 1 16/07/2023 - Part II routes
