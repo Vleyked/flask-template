@@ -23,7 +23,7 @@ login_manager.login_view = "login"
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password = ...
+    password = db.Column(db.String(100), nullable=False)
 
 
 class RegistrationForm(FlaskForm):
@@ -37,10 +37,16 @@ class RegistrationForm(FlaskForm):
         submit: another different field
     """
 
-    username = ...
-    password = ...
-    confirm = ...
-    submit = ...
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField(
+        "Password",
+        validators=[
+            DataRequired(),
+            EqualTo("confirm", message="Passwords must match!"),
+        ],
+    )
+    confirm = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Register")
 
 
 class LoginForm(FlaskForm):
@@ -51,16 +57,16 @@ class LoginForm(FlaskForm):
     submit: another different field
     """
 
-    username = ...
-    password = ...
-    sumbit = ...
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    sumbit = SubmitField("Login")
 
 
 # Exercise 1 16/07/2023 - Part II routes
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id: str):
     """Return que query filtered by user id"""
-    ...
+    return User.query.get(int(user_id))
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -77,7 +83,13 @@ def register():
             redirect if the registration is valid
         register
     """
-    return "Register route"
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        new_user = User(username=form.username.data, password=form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for("login"))
+    return render_template("register.html", form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -94,7 +106,15 @@ def login():
             redirect if the registration is valid
         login
     """
-    return "Login route"
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and user.password == form.password.data:
+            login_user(user)
+            return redirect(url_for("users"))
+        else:
+            return "Invalid credentials. Please try again."
+    return render_template("login.html", form=form)
 
 
 @app.route("/logout")
@@ -106,7 +126,8 @@ def logout():
         logout_user()
         redirect -> login
     """
-    return "Logout route"
+    logout_user()
+    return redirect(url_for("login"))
 
 
 @app.route("/users")
@@ -119,11 +140,11 @@ def users():
             query.all()
         return tenokate + object
     """
-    return "users route"
+    users = User.query.all()
+    return render_template("users.html", users=users)
 
 
 if __name__ == "__main__":
-    db.create_all()
-    app.run(
-        debug=True,
-    )
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
